@@ -81,7 +81,8 @@ class SearchNode():
 
 def genericSearch(problem, fringe):
     # every element in fringe contains all past positions and past directions.
-    """fringe.push([[problem.getStartState()], []])
+    """
+    fringe.push([[problem.getStartState()], []])
     while not fringe.isEmpty():
         node = fringe.pop()
         currentLoc = node[0][-1]
@@ -98,17 +99,19 @@ def genericSearch(problem, fringe):
                 fringe.push([updatedLocs, updatedDirs])
     return []
     """
+    """
     start = problem.getStartState()
     prevLocs = []   # track the previously expanded nodes
-    #locs_map, dirs_map = dict(), dict() # map child-parent and node-direction
+    locs_map, dirs_map = dict(), dict() # map child-parent and node-direction
     node_map = []
     fringe.push(start)
     while not fringe.isEmpty():
         node = fringe.pop()
+        
         # if expanded the goal, return list of direction.
         if problem.isGoalState(node):
             dirs, ptr = [], node
-            print(dirs_map)
+            #print(locs_map)
             while ptr != start:
                 drtn = dirs_map[ptr]   # get direction from parent to child
                 dirs.append(drtn)
@@ -123,12 +126,45 @@ def genericSearch(problem, fringe):
             prevLocs.append(node)
             for successor in problem.getSuccessors(node):
                 successorLoc, dirToSuccessor = successor[0], successor[1]
+                #if successorLoc not in prevLocs or successorLoc not in fringe.list:
                 if successorLoc not in prevLocs:
-                    #locs_map[successorLoc] = node  # buggy here...works for trees but not general graphs where a child can have multiple parents
-                    #dirs_map[successorLoc] = dirToSuccessor # also buggy here for nodes with multiple arrows pointing to it
-                    node_map.append(SearchNode(successor, parent=node))
+                    #node_map.append(SearchNode(successor, parent=node))
+                    locs_map[successorLoc] = node  # buggy here...works for trees but not general graphs where a child can have multiple parents
+                    dirs_map[successorLoc] = dirToSuccessor # also buggy here for nodes with multiple arrows pointing to it
                     fringe.push(successorLoc)    # only visit node if it hasn't been visited before
+                    print("{0} adds {1} to fringe".format(node, successorLoc))
     return []
+    """
+    
+    start = problem.getStartState()
+    prevLocs = []   # track the previously expanded nodes
+    node_map = dict()
+    fringe.push(start)
+    while not fringe.isEmpty():
+        state = fringe.pop()
+        if state is start:
+            loc, dirtn = state, None
+        else:
+            loc, dirtn = state[0], state[1]
+
+        # if expanded the goal, return list of directions
+        if problem.isGoalState(loc):
+            dirs, ptr = [], state
+            while ptr is not start:
+                dirs.append(ptr[1])
+                ptr = node_map[ptr]
+            dirs.reverse()
+            return dirs
+        
+        # push successors to fringe
+        if loc not in prevLocs:
+            prevLocs.append(loc)
+            for successor in problem.getSuccessors(loc):
+                successorLoc, dirToSuccessor = successor[0], successor[1]
+                node_map[successor] = state
+                fringe.push(successor)    # only visit node if it hasn't been visited before
+    return []
+    
 
 def depthFirstSearch(problem):
     """
@@ -156,8 +192,38 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    from util import PriorityQueueWithFunction
-    fringe = PriorityQueueWithFunction(problem.costFn)
+    from util import PriorityQueue
+    fringe = PriorityQueue()
+    start = problem.getStartState()
+    prevLocs = []   # track the previously expanded nodes
+    node_map = dict()
+    fringe.push(start, 0)
+    while not fringe.isEmpty():
+        state = fringe.pop()
+        if state is start:
+            loc, dirtn, cost = state, None, 0
+        else:
+            loc, dirtn, cost = state[0], state[1], state[2]
+
+        # if expanded the goal, return list of directions
+        if problem.isGoalState(loc):
+            dirs, ptr = [], state
+            while ptr is not start:
+                dirs.append(ptr[1])
+                ptr = node_map[ptr]
+            dirs.reverse()
+            return dirs
+        
+        # push successors to fringe
+        if loc not in prevLocs:
+            prevLocs.append(loc)
+            for successor in problem.getSuccessors(loc):
+                successorLoc, dirToSuccessor, costToSuccessor = successor[0], successor[1], successor[2]
+                successor[2] += cost
+                node_map[successor] = state
+                fringe.push(successor, cost + costToSuccessor)    # only visit node if it hasn't been visited before
+                print("{0} adds {1} to fringe, total={2}".format(state, successor, cost + costToSuccessor))
+    return []
     return genericSearch(problem, fringe)
 
 def nullHeuristic(state, problem=None):
