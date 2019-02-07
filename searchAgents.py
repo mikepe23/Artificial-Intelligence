@@ -453,37 +453,18 @@ class AStarFoodSearchAgent(SearchAgent):
 
 def foodHeuristic(state, problem):
     """
-    Your heuristic for the FoodSearchProblem goes here.
-
-    This heuristic must be consistent to ensure correctness.  First, try to come
-    up with an admissible heuristic; almost all admissible heuristics will be
-    consistent as well.
-
-    If using A* ever finds a solution that is worse uniform cost search finds,
-    your heuristic is *not* consistent, and probably not admissible!  On the
-    other hand, inadmissible or inconsistent heuristics may find optimal
-    solutions, so be careful.
-
-    The state is a tuple ( pacmanPosition, foodGrid ) where foodGrid is a Grid
-    (see game.py) of either True or False. You can call foodGrid.asList() to get
-    a list of food coordinates instead.
-
-    If you want access to info like walls, capsules, etc., you can query the
-    problem.  For example, problem.walls gives you a Grid of where the walls
-    are.
-
-    If you want to *store* information to be reused in other calls to the
-    heuristic, there is a dictionary called problem.heuristicInfo that you can
-    use. For example, if you only want to count the walls once and store that
-    value, try: problem.heuristicInfo['wallCount'] = problem.walls.count()
-    Subsequent calls to this heuristic can access
-    problem.heuristicInfo['wallCount']
+    Algorithm for heuristic:
+    If there is no food to collect, return 0
+    otherwise, find the true distance to the nearest food, and add all the food remained to collect
+    minus the nearest one.
     """
     position, foodGrid = state
-    man_sum = sum([util.manhattanDistance(position, food) for food in foodGrid.asList()])
-    if len(foodGrid.asList()) > 1:
-        man_sum /= len(foodGrid.asList())
-    return man_sum
+    if not foodGrid.asList():
+        return 0
+    nearestFood = min(foodGrid.asList(), key=lambda x: util.manhattanDistance(position, x))
+    distance_to_nearest = mazeDistance(position, nearestFood, problem.startingGameState)
+    remaining_food = sum([1 for food in foodGrid.asList()]) - 1
+    return distance_to_nearest + remaining_food
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
