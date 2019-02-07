@@ -463,7 +463,7 @@ def foodHeuristic(state, problem):
         return 0
     nearestFood = min(foodGrid.asList(), key=lambda x: util.manhattanDistance(position, x))
     distance_to_nearest = mazeDistance(position, nearestFood, problem.startingGameState)
-    remaining_food = sum([1 for food in foodGrid.asList()]) - 1
+    remaining_food = len(foodGrid.asList()) - 1
     return distance_to_nearest + remaining_food
 
 class ClosestDotSearchAgent(SearchAgent):
