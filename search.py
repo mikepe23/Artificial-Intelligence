@@ -72,30 +72,6 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def genericSearch(problem, fringe, s_type='dfs'):
-    # every element in fringe contains all past positions and past directions.
-    start = (problem.getStartState(), None, 0)
-    prevLocs = []   # track the previously expanded nodes
-    node_map = dict()
-    fringe.push(start)
-    while not fringe.isEmpty():
-        state = fringe.pop()
-        loc, dirtn, cost = state
-
-        # if expanded the goal, return list of directions
-        if problem.isGoalState(loc):
-            return getActionSequence(state, start, node_map)
-        
-        # push successors to fringe
-        if loc not in prevLocs:
-            prevLocs.append(loc)
-            for successor in problem.getSuccessors(loc):
-                successorLoc, dirToSuccessor, costToSucc = successor
-                node_map[successor] = state
-                fringe.push(successor)    # only visit node if it hasn't been visited before
-    return []
-    
-
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -110,53 +86,67 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    from util import Stack
-    fringe = Stack()
-    return genericSearch(problem, fringe)
+    fringe = util.Stack()
+    # every element in stack contains all past positions and past directions.
+    fringe.push([[problem.getStartState()], []])
+    while not fringe.isEmpty():
+        step = fringe.pop()
+        pos = step[0][-1]
+        # if expanded the goal, return list of direction.
+        if problem.isGoalState(pos):
+            return step[1]
+        else: 
+            successors = problem.getSuccessors(pos)
+            # for every successor, check if visited node before.
+            # if not, push to stack with current position and directions.
+            for s in successors:
+                nextPos, nextDir = s[0], s[1]
+                if nextPos not in step[0]:
+                    fringe.push([step[0] + [nextPos], step[1] + [nextDir]])
+    return []
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    from util import Queue
-    fringe = Queue()
-    return genericSearch(problem, fringe)
+    # Changed abstraction to dictionary to allow easier readability
+    # and adding data (such as cost) more easily in future algos.
+    fringe = util.Queue()
+    fringe.push({'pos': [problem.getStartState()], 'dir': []})
+    visited = [problem.getStartState()]
+    while not fringe.isEmpty():
+        step = fringe.pop()
+        pos = step['pos'][-1]
+        if problem.isGoalState(pos):
+            return step['dir']
+        else: 
+            successors = problem.getSuccessors(pos)
+            for s in successors:
+                nextPos, nextDir = s[0], s[1]
+                if nextPos not in step['pos'] and nextPos not in visited:
+                    if not problem.isGoalState(nextPos):
+                        visited.append(nextPos)
+                    fringe.push({'pos': step['pos'] + [nextPos], 'dir': step['dir'] + [nextDir]})
+    return []
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    from util import PriorityQueue
-    fringe = PriorityQueue()
-    start = (problem.getStartState(), None, 0)
-    prevLocs = []   # track the previously expanded nodes
-    node_map = dict()
-    fringe.push(start, 0)
+    fringe = util.PriorityQueue()
+    fringe.push({'pos': [problem.getStartState()], 'dir': [], 'cost': 0}, 0)
+    visited = [problem.getStartState()]
     while not fringe.isEmpty():
-        state = fringe.pop()
-        loc, dirtn, cost = state
-
-        # if expanded the goal, return list of directions
-        if problem.isGoalState(loc):
-            return getActionSequence(state, start, node_map)
-        
-        # push successors to fringe
-        if loc not in prevLocs:
-            prevLocs.append(loc)
-            for successor in problem.getSuccessors(loc):
-                succLoc, succDir, succCost = successor
-                if succLoc not in prevLocs:
-                    node_map[successor] = state
-
-                    actions = getActionSequence(successor, start, node_map)
-                    totalCost = problem.getCostOfActions(actions)
-
-                    fringe.push(successor, totalCost)    # only visit node if it hasn't been visited before
+        step = fringe.pop()
+        pos = step['pos'][-1]
+        if problem.isGoalState(pos):
+            return step['dir']
+        else: 
+            successors = problem.getSuccessors(pos)
+            for s in successors:
+                nextPos, nextDir, nextCost = s
+                if nextPos not in step['pos'] and nextPos not in visited:
+                    if not problem.isGoalState(nextPos):
+                        visited.append(nextPos)
+                    newCost = step['cost'] + nextCost
+                    fringe.push({'pos': step['pos'] + [nextPos], 'dir': step['dir'] + [nextDir], 'cost': newCost}, newCost)
     return []
-
-def getActionSequence(state, start, node_map):
-    dirs, ptr = [], state
-    while ptr is not start:
-        dirs.append(ptr[1])
-        ptr = node_map[ptr]
-    dirs.reverse()
-    return dirs
 
 def nullHeuristic(state, problem=None):
     """
@@ -167,32 +157,23 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    from util import PriorityQueue
-    fringe = PriorityQueue()
-    start = (problem.getStartState(), None, 0)
-    prevLocs = []   # track the previously expanded nodes
-    node_map = dict()
-    fringe.push(start, 0)
+    fringe = util.PriorityQueue()
+    fringe.push({'pos': [problem.getStartState()], 'dir': [], 'cost': 0}, 0)
+    visited = [problem.getStartState()]
     while not fringe.isEmpty():
-        state = fringe.pop()
-        loc, dirtn, cost = state
-
-        # if expanded the goal, return list of directions
-        if problem.isGoalState(loc):
-            return getActionSequence(state, start, node_map)
-        
-        # push successors to fringe
-        if loc not in prevLocs:
-            prevLocs.append(loc)
-            for successor in problem.getSuccessors(loc):
-                succLoc, succDir, succCost = successor
-                if succLoc not in prevLocs:
-                    node_map[successor] = state
-
-                    actions = getActionSequence(successor, start, node_map)
-                    totalCost = problem.getCostOfActions(actions)
-
-                    fringe.push(successor, totalCost + heuristic(succLoc, problem))    # only visit node if it hasn't been visited before
+        step = fringe.pop()
+        pos = step['pos'][-1]
+        if problem.isGoalState(pos):
+            return step['dir']
+        else: 
+            successors = problem.getSuccessors(pos)
+            for s in successors:
+                nextPos, nextDir, nextCost = s
+                if nextPos not in step['pos'] and nextPos not in visited:
+                    if not problem.isGoalState(nextPos):
+                        visited.append(nextPos)
+                    newCost = step['cost'] + nextCost
+                    fringe.update({'pos': step['pos'] + [nextPos], 'dir': step['dir'] + [nextDir], 'cost': newCost}, newCost + heuristic(nextPos, problem))
     return []
 
 
