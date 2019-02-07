@@ -287,12 +287,6 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-        # self.hasTouchedCorner = {
-        #    self.corners[0]: False, 
-        #    self.corners[1]: False, 
-        #    self.corners[2]: False, 
-        #    self.corners[3]: False
-        # }
 
     def getStartState(self):
         """
@@ -320,13 +314,6 @@ class CornersProblem(search.SearchProblem):
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
-
-            "*** prohibit an action leading to a wall or a corner (if it's been visited) ***"
             x,y = state[0]
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
@@ -342,7 +329,6 @@ class CornersProblem(search.SearchProblem):
                     nextState = (nextLoc, state[1])
                 successors.append( (nextState, action, 1) )
         self._expanded += 1 # DO NOT CHANGE
-        # print("My list of successors:{0}".format(successors))
         return successors
 
     def getCostOfActions(self, actions):
@@ -367,7 +353,6 @@ def manSums(location, remaining_locs):
         rem_copy.remove(corner)
         path_distance = util.manhattanDistance(location, corner) + manSums(corner, rem_copy)
         sums.append(path_distance)
-    #print(sums)
     return min(sums)
 
 def cornersHeuristic(state, problem):
@@ -480,10 +465,12 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    man_sum = sum([util.manhattanDistance(position, food) for food in foodGrid.asList()])
-    if len(foodGrid.asList()) > 1:
-        man_sum /= len(foodGrid.asList())
-    return man_sum
+    food_list = foodGrid.asList()
+    man_sum = sum([util.manhattanDistance(position, food) for food in food_list])
+    if len(food_list) > 1:
+        man_sum /= len(food_list)
+        
+    return 0
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -507,14 +494,8 @@ class ClosestDotSearchAgent(SearchAgent):
         Returns a path (a list of actions) to the closest dot, starting from
         gameState.
         """
-        # Here are some useful elements of the startState
-        startPosition = gameState.getPacmanPosition()
-        food = gameState.getFood()
-        walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.aStarSearch(problem) 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -547,10 +528,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         The state is Pacman's position. Fill this in with a goal test that will
         complete the problem definition.
         """
-        x,y = state
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return state in self.food.asList()
 
 def mazeDistance(point1, point2, gameState):
     """
