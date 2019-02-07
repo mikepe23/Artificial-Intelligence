@@ -480,10 +480,6 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-<<<<<<< HEAD
-=======
-    position, foodGrid = state
->>>>>>> 2ea8b1226f283b5049e147daf7cfe66cc3f8f7d6
     man_sum = sum([util.manhattanDistance(position, food) for food in foodGrid.asList()])
     if len(foodGrid.asList()) > 1:
         man_sum /= len(foodGrid.asList())
