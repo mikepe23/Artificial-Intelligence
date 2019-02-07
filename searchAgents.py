@@ -287,22 +287,29 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-        "*** YOUR CODE HERE ***"
+        self.currentPosition = self.startingPosition
+        self.hasTouchedCorner = {
+            self.corners[0]: False, 
+            self.corners[1]: False, 
+            self.corners[2]: False, 
+            self.corners[3]: False
+        }
 
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.startingPosition
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if state in self.corners:
+            self.hasTouchedCorner[state] = True
+        print("state={0} -- corners={1}".format(state, self.hasTouchedCorner))
+        return all(val == True for val in self.hasTouchedCorner.values())
 
     def getSuccessors(self, state):
         """
@@ -324,7 +331,17 @@ class CornersProblem(search.SearchProblem):
             #   nextx, nexty = int(x + dx), int(y + dy)
             #   hitsWall = self.walls[nextx][nexty]
 
-            "*** YOUR CODE HERE ***"
+            "*** prohibit an action leading to a wall or a corner (if it's been visited) ***"
+            x,y = state
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                nextState = (nextx, nexty)
+                #if nextState not in self.corners:
+                successors.append( (nextState, action, 1) )
+                #elif self.hasTouchedCorner[nextState] == False:
+                #    successors.append( (nextState, action, 1) )
 
         self._expanded += 1 # DO NOT CHANGE
         return successors

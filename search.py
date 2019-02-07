@@ -72,33 +72,25 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def genericSearch(problem, fringe):
+def genericSearch(problem, fringe, s_type='dfs'):
     # every element in fringe contains all past positions and past directions.
-    start = problem.getStartState()
+    start = (problem.getStartState(), None, 0)
     prevLocs = []   # track the previously expanded nodes
     node_map = dict()
     fringe.push(start)
     while not fringe.isEmpty():
         state = fringe.pop()
-        if state is start:
-            loc, dirtn = state, None
-        else:
-            loc, dirtn = state[0], state[1]
+        loc, dirtn, cost = state
 
         # if expanded the goal, return list of directions
         if problem.isGoalState(loc):
-            dirs, ptr = [], state
-            while ptr is not start:
-                dirs.append(ptr[1])
-                ptr = node_map[ptr]
-            dirs.reverse()
-            return dirs
+            return getActionSequence(state, start, node_map)
         
         # push successors to fringe
         if loc not in prevLocs:
             prevLocs.append(loc)
             for successor in problem.getSuccessors(loc):
-                successorLoc, dirToSuccessor = successor[0], successor[1]
+                successorLoc, dirToSuccessor, costToSucc = successor
                 node_map[successor] = state
                 fringe.push(successor)    # only visit node if it hasn't been visited before
     return []
