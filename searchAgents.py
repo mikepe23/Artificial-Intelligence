@@ -377,9 +377,8 @@ def cornersHeuristic(state, problem):
 
     man_sum = sum([util.manhattanDistance(state[0], corner) for corner in state[1]])
     if len(state[1]) > 1:
-        return man_sum/2
-    else:
-        return man_sum
+        man_sum = man_sum/2
+    return man_sum
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
