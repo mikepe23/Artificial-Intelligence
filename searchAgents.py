@@ -377,7 +377,7 @@ def cornersHeuristic(state, problem):
 
     man_sum = sum([util.manhattanDistance(state[0], corner) for corner in state[1]])
     if len(state[1]) > 1:
-        man_sum = man_sum/2
+        man_sum /= 2
     return man_sum
 
 class AStarCornersAgent(SearchAgent):
@@ -471,8 +471,10 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    man_sum = sum([util.manhattanDistance(position, food) for food in foodGrid.asList()])
+    if len(foodGrid.asList()) > 1:
+        man_sum /= len(foodGrid.asList())
+    return man_sum
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
