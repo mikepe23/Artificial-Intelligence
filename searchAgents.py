@@ -358,6 +358,17 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
+def manSums(location, remaining_locs):
+    if not remaining_locs:
+        return 0
+    sums = []
+    for corner in remaining_locs:
+        rem_copy = list(remaining_locs).copy()
+        rem_copy.remove(corner)
+        path_distance = util.manhattanDistance(location, corner) + manSums(corner, rem_copy)
+        sums.append(path_distance)
+    #print(sums)
+    return min(sums)
 
 def cornersHeuristic(state, problem):
     """
@@ -375,10 +386,8 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    man_sum = sum([util.manhattanDistance(state[0], corner) for corner in state[1]])
-    if len(state[1]) > 1:
-        man_sum /= 2
-    return man_sum
+    state_loc, state_corners_left = state
+    return manSums(state_loc, state_corners_left)
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -471,6 +480,10 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
+<<<<<<< HEAD
+=======
+    position, foodGrid = state
+>>>>>>> 2ea8b1226f283b5049e147daf7cfe66cc3f8f7d6
     man_sum = sum([util.manhattanDistance(position, food) for food in foodGrid.asList()])
     if len(foodGrid.asList()) > 1:
         man_sum /= len(foodGrid.asList())
